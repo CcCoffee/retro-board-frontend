@@ -15,6 +15,22 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, HeartIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { format, isBefore, startOfDay } from "date-fns"
 
+interface Card {
+  id: string;
+  type: string;
+  content: string;
+  isAnonymous: boolean;
+  author: string;
+  likes: string[];
+}
+
+interface ActionItem {
+  id: string;
+  assignee: string;
+  dueDate: string;
+  content: string;
+}
+
 const columns = [
   { id: "good", title: "Good", color: "bg-green-100" },
   { id: "keep", title: "Keep", color: "bg-blue-100" },
@@ -32,12 +48,12 @@ const users = [
 export default function RetroBoard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState({ id: "", name: "", avatar: "" })
-  const [cards, setCards] = useState([])
-  const [newCard, setNewCard] = useState({ type: "good", content: "", isAnonymous: false })
+  const [cards, setCards] = useState<Card[]>([])
+  const [newCard, setNewCard] = useState<Omit<Card, 'id' | 'author' | 'likes'>>({ type: "good", content: "", isAnonymous: false })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [actionItems, setActionItems] = useState([])
-  const [newActionItem, setNewActionItem] = useState({ assignee: "", dueDate: "", content: "" })
-  const [editingActionItem, setEditingActionItem] = useState(null)
+  const [actionItems, setActionItems] = useState<ActionItem[]>([])
+  const [newActionItem, setNewActionItem] = useState<Omit<ActionItem, 'id'>>({ assignee: "", dueDate: "", content: "" })
+  const [editingActionItem, setEditingActionItem] = useState<ActionItem | null>(null)
 
   useEffect(() => {
     const storedCards = localStorage.getItem("retroCards")
@@ -57,19 +73,19 @@ export default function RetroBoard() {
   }
 
   const handleCardSubmit = () => {
-    const updatedCards = [...cards, { ...newCard, id: Date.now().toString(), author: newCard.isAnonymous ? "Anonymous" : user.name, likes: [] }]
+    const updatedCards: Card[] = [...cards, { ...newCard, id: Date.now().toString(), author: newCard.isAnonymous ? "Anonymous" : user.name, likes: [] }]
     setCards(updatedCards)
     localStorage.setItem("retroCards", JSON.stringify(updatedCards))
     setNewCard({ type: "good", content: "", isAnonymous: false })
   }
 
-  const handleCardDelete = (cardId) => {
+  const handleCardDelete = (cardId: string) => {
     const updatedCards = cards.filter(card => card.id !== cardId)
     setCards(updatedCards)
     localStorage.setItem("retroCards", JSON.stringify(updatedCards))
   }
 
-  const handleCardLike = (cardId) => {
+  const handleCardLike = (cardId: string) => {
     const updatedCards = cards.map(card => {
       if (card.id === cardId) {
         const likes = card.likes.includes(user.id)
@@ -84,7 +100,7 @@ export default function RetroBoard() {
   }
 
   const handleActionItemSubmit = () => {
-    let updatedActionItems
+    let updatedActionItems: ActionItem[]
     if (editingActionItem) {
       updatedActionItems = actionItems.map(item =>
         item.id === editingActionItem.id ? { ...newActionItem, id: item.id } : item
@@ -98,13 +114,13 @@ export default function RetroBoard() {
     setEditingActionItem(null)
   }
 
-  const handleActionItemDelete = (itemId) => {
+  const handleActionItemDelete = (itemId: string) => {
     const updatedActionItems = actionItems.filter(item => item.id !== itemId)
     setActionItems(updatedActionItems)
     localStorage.setItem("actionItems", JSON.stringify(updatedActionItems))
   }
 
-  const handleActionItemEdit = (item) => {
+  const handleActionItemEdit = (item: ActionItem) => {
     setNewActionItem(item)
     setEditingActionItem(item)
   }
@@ -164,7 +180,7 @@ export default function RetroBoard() {
               <Checkbox
                 id="anonymous"
                 checked={newCard.isAnonymous}
-                onCheckedChange={(checked) => setNewCard({ ...newCard, isAnonymous: checked })}
+                onCheckedChange={(checked: boolean) => setNewCard({ ...newCard, isAnonymous: checked })}
               />
               <label htmlFor="anonymous" className="ml-2 hidden sm:inline">Anonymous</label>
             </div>
@@ -274,7 +290,7 @@ export default function RetroBoard() {
                       <Calendar
                         mode="single"
                         selected={newActionItem.dueDate ? new Date(newActionItem.dueDate) : undefined}
-                        onSelect={(date) => setNewActionItem({ ...newActionItem, dueDate: date?.toISOString() })}
+                        onSelect={(date: Date | undefined) => setNewActionItem({ ...newActionItem, dueDate: date?.toISOString() || '' })}
                         disabled={(date) => isBefore(date, startOfDay(new Date()))}
                         initialFocus
                       />
