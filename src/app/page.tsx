@@ -215,7 +215,10 @@ export default function RetroBoard() {
               </SelectTrigger>
               <SelectContent>
                 {columns.map((column) => (
-                  <SelectItem key={column.id} value={column.id}>{column.title}</SelectItem>
+                  <SelectItem key={column.id} value={column.id} className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full mr-2 ${column.color} inline-block`}></div>
+                    <span className="inline">{column.title}</span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
