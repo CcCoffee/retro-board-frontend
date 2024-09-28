@@ -14,6 +14,17 @@ import { Label } from "@/components/ui/label"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, HeartIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { format, isBefore, startOfDay } from "date-fns"
+import * as React from "react"
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 
 interface Card {
   id: string;
@@ -54,6 +65,7 @@ export default function RetroBoard() {
   const [actionItems, setActionItems] = useState<ActionItem[]>([])
   const [newActionItem, setNewActionItem] = useState<Omit<ActionItem, 'id'>>({ assignee: "", dueDate: "", content: "" })
   const [editingActionItem, setEditingActionItem] = useState<ActionItem | null>(null)
+  const [openAssignee, setOpenAssignee] = useState(false)
 
   useEffect(() => {
     const storedCards = localStorage.getItem("retroCards")
@@ -268,16 +280,49 @@ export default function RetroBoard() {
                 <h3 className="text-lg font-bold mb-2 font-heading">Action Items</h3>
                 <div className="mb-4">
                   <Label htmlFor="assignee">Assignee</Label>
-                  <Select value={newActionItem.assignee} onValueChange={(value) => setNewActionItem({ ...newActionItem, assignee: value })}>
-                    <SelectTrigger id="assignee">
-                      <SelectValue placeholder="Select assignee" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openAssignee} onOpenChange={setOpenAssignee}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openAssignee}
+                        className="w-full justify-between"
+                      >
+                        {newActionItem.assignee
+                          ? users.find((user) => user.id === newActionItem.assignee)?.name
+                          : "Select assignee..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search assignee..." />
+                        <CommandList>
+                          <CommandEmpty>No assignee found.</CommandEmpty>
+                          <CommandGroup>
+                            {users.map((user) => (
+                              <CommandItem
+                                key={user.id}
+                                value={user.id}
+                                onSelect={(currentValue) => {
+                                  setNewActionItem({ ...newActionItem, assignee: currentValue === newActionItem.assignee ? "" : currentValue })
+                                  setOpenAssignee(false)
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    newActionItem.assignee === user.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {user.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <Label htmlFor="dueDate" className="mt-2">Due Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
