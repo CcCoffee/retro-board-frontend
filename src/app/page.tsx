@@ -196,18 +196,18 @@ export default function RetroBoard() {
                       <Card key={card.id} className="mb-2 relative">
                         <CardContent className="p-4">
                           <p>{card.content}</p>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2"
-                            onClick={() => handleCardDelete(card.id)}
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
                         </CardContent>
                         <CardFooter className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground">{card.author}</span>
                           <div className="flex items-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleCardDelete(card.id)}
+                              className="mr-2"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
