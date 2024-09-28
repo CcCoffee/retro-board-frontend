@@ -208,7 +208,7 @@ export default function RetroBoard() {
               </Button>
             </div>
           </div>
-          <div className="flex justify-end p-4 gap-2">
+          <div className="flex justify-end pt-0 px-4 pb-4 gap-2">
             <Select value={newCard.type} onValueChange={(value) => setNewCard({ ...newCard, type: value })}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select type" />
@@ -216,7 +216,7 @@ export default function RetroBoard() {
               <SelectContent>
                 {columns.map((column) => (
                   <SelectItem key={column.id} value={column.id} className="flex items-center">
-                    <div className={`w-3 h-3 rounded-full mr-2 ${column.color} inline-block`}></div>
+                    <div className={`w-3 h-3 mr-2 ${column.color} inline-block`}></div>
                     <span className="inline">{column.title}</span>
                   </SelectItem>
                 ))}
