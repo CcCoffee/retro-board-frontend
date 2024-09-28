@@ -264,7 +264,7 @@ export default function RetroBoard() {
               </div>
             </div>
             {isSidebarOpen && (
-              <div className="w-[300px] overflow-auto">
+              <div className="w-[300px] overflow-auto pr-4">
                 <h3 className="text-lg font-bold mb-2 font-heading">Action Items</h3>
                 <div className="mb-4">
                   <Label htmlFor="assignee">Assignee</Label>
@@ -336,7 +336,7 @@ export default function RetroBoard() {
               </div>
             )}
           </div>
-          <div className="h-8"></div>
+          <div className="h-4"></div>
         </div>
       )}
     </div>
