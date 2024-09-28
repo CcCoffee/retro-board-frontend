@@ -50,10 +50,10 @@ const columns = [
 ]
 
 const users = [
+  { id: "0", name: "Admin", avatar: "/placeholder.svg?height=32&width=32" },
   { id: "1", name: "Alice", avatar: "/placeholder.svg?height=32&width=32" },
   { id: "2", name: "Bob", avatar: "/placeholder.svg?height=32&width=32" },
   { id: "3", name: "Charlie", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: "admin", name: "Admin", avatar: "/placeholder.svg?height=32&width=32" },
 ]
 
 export default function RetroBoard() {
@@ -81,7 +81,7 @@ export default function RetroBoard() {
 
   const handleLogin = () => {
     setIsLoggedIn(true)
-    setUser({ id: "admin", name: "Admin", avatar: "/placeholder.svg?height=32&width=32" })
+    setUser({ id: "0", name: "Admin", avatar: "/placeholder.svg?height=32&width=32" }) // 更新 admin 的 id
   }
 
   const handleCardSubmit = () => {
@@ -289,7 +289,7 @@ export default function RetroBoard() {
                         className="w-full justify-between"
                       >
                         {newActionItem.assignee
-                          ? users.find((user) => user.id === newActionItem.assignee)?.name
+                          ? `${users.find((user) => user.id === newActionItem.assignee)?.name} (${newActionItem.assignee})`
                           : "Select assignee..."}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -303,9 +303,9 @@ export default function RetroBoard() {
                             {users.map((user) => (
                               <CommandItem
                                 key={user.id}
-                                value={user.id}
-                                onSelect={(currentValue) => {
-                                  setNewActionItem({ ...newActionItem, assignee: currentValue === newActionItem.assignee ? "" : currentValue })
+                                value={`${user.name} ${user.id}`.toLowerCase()}
+                                onSelect={() => {
+                                  setNewActionItem({ ...newActionItem, assignee: user.id })
                                   setOpenAssignee(false)
                                 }}
                               >
@@ -315,7 +315,7 @@ export default function RetroBoard() {
                                     newActionItem.assignee === user.id ? "opacity-100" : "opacity-0"
                                   )}
                                 />
-                                {user.name}
+                                {user.name} ({user.id})
                               </CommandItem>
                             ))}
                           </CommandGroup>
