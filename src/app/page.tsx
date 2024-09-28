@@ -313,7 +313,7 @@ export default function RetroBoard() {
               </div>
             </div>
             {isSidebarOpen && (
-              <div className="w-[300px] overflow-auto pr-4">
+              <div className="w-[300px] overflow-auto pl-1 pr-4">
                 <h3 className="text-lg font-bold mb-2 font-heading">Action Items</h3>
                 <div className="mb-4">
                   <Label htmlFor="assignee">Assignee</Label>
@@ -365,7 +365,7 @@ export default function RetroBoard() {
                     <PopoverTrigger asChild>
                       <Button id="dueDate" variant="outline" className="w-full justify-start text-left font-normal">
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newActionItem.dueDate ? format(new Date(newActionItem.dueDate), "PPP") : <span>Pick a date</span>}
+                        {newActionItem.dueDate ? format(new Date(newActionItem.dueDate), "yyyy/MM/dd") : <span>Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -392,24 +392,23 @@ export default function RetroBoard() {
                 </div>
                 <div>
                   {actionItems.map((item) => (
-                    <Card key={item.id} className={`mb-2 ${new Date(item.dueDate)
-
- < new Date() ? "bg-destructive/10" : ""}`}>
+                    <Card key={item.id} className={`mb-2 ${new Date(item.dueDate) < new Date() ? "bg-destructive/10" : ""}`}>
                       <CardContent className="p-4">
-                        <div className="flex justify-end mb-2">
+                        <p className="whitespace-pre-wrap break-words">{item.content}</p>
+                      </CardContent>
+                      <CardFooter className="flex justify-between items-center text-xs text-muted-foreground">
+                        <div className="flex-1 flex items-center space-x-2 overflow-hidden">
+                          <span className="truncate">{users.find(user => user.id === item.assignee)?.name || '未指派'}</span>
+                          <span className="flex-shrink-0">|</span>
+                          <span className="truncate">{item.dueDate ? format(new Date(item.dueDate), "yyyy/MM/dd") : '无截止日期'}</span>
+                        </div>
+                        <div className="flex-shrink-0 ml-2">
                           <Button variant="ghost" size="icon" onClick={() => handleActionItemEdit(item)}>
                             <PencilIcon className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleActionItemDelete(item.id)}>
                             <TrashIcon className="h-4 w-4" />
                           </Button>
-                        </div>
-                        <p>{item.content}</p>
-                      </CardContent>
-                      <CardFooter className="flex justify-end text-sm text-muted-foreground">
-                        <div>
-                          <p>Assignee: {users.find(user => user.id === item.assignee)?.name || 'Unassigned'}</p>
-                          <p>Due: {item.dueDate ? format(new Date(item.dueDate), "PPP") : 'No due date'}</p>
                         </div>
                       </CardFooter>
                     </Card>
