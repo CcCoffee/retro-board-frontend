@@ -4,6 +4,7 @@ import { useState, KeyboardEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { authService } from "@/services/authService"
 
 interface LoginProps {
   onLogin: (username: string) => void
@@ -13,13 +14,19 @@ export default function Login({ onLogin }: LoginProps) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username && password) {
-      onLogin(username)
+      try {
+        const user = await authService.login(username, password)
+        authService.setCurrentUser(user)
+        onLogin(username)
+      } catch (error) {
+        console.error("Login failed:", error)
+        // 这里可以添加错误处理,比如显示错误消息
+      }
     }
   }
 
-  // 添加键盘事件处理函数
   const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       handleLogin()
@@ -51,7 +58,7 @@ export default function Login({ onLogin }: LoginProps) {
               className="mb-4" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
             />
             <Input 
               type="password" 
@@ -59,7 +66,7 @@ export default function Login({ onLogin }: LoginProps) {
               className="mb-4"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
             />
           </CardContent>
           <CardFooter>

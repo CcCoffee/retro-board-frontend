@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -36,29 +36,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 
 import Login from "@/components/login"
-
-interface Card {
-  id: string;
-  type: string;
-  content: string;
-  isAnonymous: boolean;
-  author: string;
-  likes: string[];
-}
-
-interface ActionItem {
-  id: string;
-  assignee: string;
-  dueDate: string;
-  content: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  email: string;
-}
+import { authService } from "@/services/authService"
+import { retroService } from "@/services/retroService"
+import { User, RetroCard, ActionItem } from "@/types/retro"
 
 const typesInfo = [
   { id: "good", title: "Good", color: "bg-green-100", indicatorColor: "bg-green-300" },
@@ -75,10 +55,11 @@ const users: User[] = [
 ]
 
 export default function RetroBoard() {
-  const [isLoggedIn, setIsLoggedIn] = useState(typeof localStorage !== 'undefined' && !!localStorage.getItem("user"))
-  const [user, setUser] = useState<User>({ id: "", name: "", avatar: "", email: "" })
-  const [cards, setCards] = useState<Card[]>([])
-  const [newCard, setNewCard] = useState<Omit<Card, 'id' | 'author' | 'likes'>>({ type: "good", content: "", isAnonymous: false })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [cards, setCards] = useState<RetroCard[]>([])
+  const [newCard, setNewCard] = useState<Omit<RetroCard, 'id' | 'author' | 'likes'>>({ type: "good", content: "", isAnonymous: false })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [actionItems, setActionItems] = useState<ActionItem[]>([])
   const [newActionItem, setNewActionItem] = useState<Omit<ActionItem, 'id'>>({ assignee: "", dueDate: "", content: "" })
@@ -86,24 +67,29 @@ export default function RetroBoard() {
   const [openAssignee, setOpenAssignee] = useState(false)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser)
-      setUser(parsedUser)
+    const checkLoginStatus = () => {
+      const isUserLoggedIn = !!localStorage.getItem("user")
+      setIsLoggedIn(isUserLoggedIn)
+      if (isUserLoggedIn) {
+        const currentUser = authService.getCurrentUser()
+        if (currentUser) {
+          setUser(currentUser)
+          loadData()
+        }
+      }
+      setIsLoading(false)
     }
 
-    // load data from database
-    const storedCards = localStorage.getItem("retroCards")
-    if (storedCards) {
-      setCards(JSON.parse(storedCards))
-    }
-
-    // load data from database
-    const storedActionItems = localStorage.getItem("actionItems")
-    if (storedActionItems) {
-      setActionItems(JSON.parse(storedActionItems))
-    }
+    checkLoginStatus()
   }, [])
+
+  const loadData = async () => {
+    const loadedCards = await retroService.getCards()
+    setCards(loadedCards)
+
+    const loadedActionItems = await retroService.getActionItems()
+    setActionItems(loadedActionItems)
+  }
 
   const isActionItemValid = newActionItem.assignee && newActionItem.content.trim() !== ""
 
@@ -114,30 +100,36 @@ export default function RetroBoard() {
   const totalActionItems = actionItems.length
   const overdueTasks = actionItems.filter(item => new Date(item.dueDate) < startOfDay(new Date())).length
 
-  const handleLogin = (username: string) => {
-    const newUser = users[0]
+  const handleLogin = async (username: string) => {
+    const user = await authService.login(username, "password") // 假设密码
     setIsLoggedIn(true)
-    setUser(newUser)
-    localStorage.setItem("user", JSON.stringify(newUser))
+    setUser(user)
+    loadData()
   }
 
-  const handleCardSubmit = (e?: React.FormEvent) => {
+  const handleCardSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
-    if (isSubmitEnabled) {
-      const updatedCards: Card[] = [...cards, { ...newCard, id: Date.now().toString(), author: newCard.isAnonymous ? "Anonymous" : user.name, likes: [] }]
-      setCards(updatedCards)
-      localStorage.setItem("retroCards", JSON.stringify(updatedCards))
+    if (isSubmitEnabled && user) {
+      const newCardData: RetroCard = { 
+        ...newCard, 
+        id: Date.now().toString(), 
+        author: newCard.isAnonymous ? "Anonymous" : user.name, 
+        likes: [] 
+      }
+      await retroService.saveCard(newCardData)
+      setCards(await retroService.getCards())
       setNewCard({ type: "good", content: "", isAnonymous: false })
     }
   }
 
-  const handleCardDelete = (cardId: string) => {
+  const handleCardDelete = async (cardId: string) => {
     const updatedCards = cards.filter(card => card.id !== cardId)
+    await retroService.updateCards(updatedCards)
     setCards(updatedCards)
-    localStorage.setItem("retroCards", JSON.stringify(updatedCards))
   }
 
-  const handleCardLike = (cardId: string) => {
+  const handleCardLike = async (cardId: string) => {
+    if (!user) return
     const updatedCards = cards.map(card => {
       if (card.id === cardId) {
         const likes = card.likes.includes(user.id)
@@ -147,11 +139,11 @@ export default function RetroBoard() {
       }
       return card
     })
+    await retroService.updateCards(updatedCards)
     setCards(updatedCards)
-    localStorage.setItem("retroCards", JSON.stringify(updatedCards))
   }
 
-  const handleActionItemSubmit = (e?: React.FormEvent) => {
+  const handleActionItemSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
     if (isActionItemSubmitEnabled) {
       let updatedActionItems: ActionItem[]
@@ -160,19 +152,21 @@ export default function RetroBoard() {
           item.id === editingActionItem.id ? { ...newActionItem, id: item.id } : item
         )
       } else {
-        updatedActionItems = [...actionItems, { ...newActionItem, id: Date.now().toString() }]
+        const newItem = { ...newActionItem, id: Date.now().toString() }
+        updatedActionItems = [...actionItems, newItem]
+        await retroService.saveActionItem(newItem)
       }
+      await retroService.updateActionItems(updatedActionItems)
       setActionItems(updatedActionItems)
-      localStorage.setItem("actionItems", JSON.stringify(updatedActionItems))
       setNewActionItem({ assignee: "", dueDate: "", content: "" })
       setEditingActionItem(null)
     }
   }
 
-  const handleActionItemDelete = (itemId: string) => {
+  const handleActionItemDelete = async (itemId: string) => {
     const updatedActionItems = actionItems.filter(item => item.id !== itemId)
+    await retroService.updateActionItems(updatedActionItems)
     setActionItems(updatedActionItems)
-    localStorage.setItem("actionItems", JSON.stringify(updatedActionItems))
   }
 
   const handleActionItemEdit = (item: ActionItem) => {
@@ -180,10 +174,10 @@ export default function RetroBoard() {
     setEditingActionItem(item)
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authService.logout()
     setIsLoggedIn(false)
-    setUser({ id: "", name: "", avatar: "", email: "" })
-    localStorage.removeItem("user")
+    setUser(null)
   }
 
   const handleCardKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -205,6 +199,10 @@ export default function RetroBoard() {
         }
       }
     }
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
