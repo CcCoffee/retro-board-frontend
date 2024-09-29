@@ -34,9 +34,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 
 import Login from "@/components/login"
+import { Separator } from "@radix-ui/react-select"
 
 interface Card {
   id: string;
@@ -444,17 +444,28 @@ export default function RetroBoard() {
                 </div>
                 <div>
                   {actionItems.map((item) => (
-                    <Card key={item.id} className={`mb-2 ${new Date(item.dueDate) < startOfDay(new Date()) ? "bg-destructive/10" : ""}`}>
+                    <Card 
+                      key={item.id} 
+                      className={`mb-2 ${
+                        new Date(item.dueDate) < startOfDay(new Date()) 
+                          ? "bg-destructive/10" 
+                          : "bg-yellow-100"
+                      }`}
+                    >
                       <CardContent className="p-4">
                         <p className="whitespace-pre-wrap break-words">{item.content}</p>
                       </CardContent>
-                      <CardFooter className="flex justify-between items-center text-xs text-muted-foreground">
-                        <div className="flex-1 flex items-center space-x-2 overflow-hidden">
-                          <span className="truncate">{users.find(user => user.id === item.assignee)?.name || 'Unassigned'}</span>
-                          <span className="flex-shrink-0">|</span>
-                          <span className="truncate">{item.dueDate ? format(new Date(item.dueDate), "yyyy/MM/dd") : 'No due date'}</span>
+                      <div className="h-[40px] flex justify-between items-center px-4">
+                        <div className="flex items-center space-x-2 overflow-hidden">
+                          <span className="text-xs text-muted-foreground truncate">
+                            {users.find(user => user.id === item.assignee)?.name || 'Unassigned'}
+                          </span>
+                          <span className="text-xs text-muted-foreground">|</span>
+                          <span className="text-xs text-muted-foreground truncate">
+                            {item.dueDate ? format(new Date(item.dueDate), "yyyy/MM/dd") : 'No due date'}
+                          </span>
                         </div>
-                        <div className="flex-shrink-0 ml-2">
+                        <div className="flex">
                           <Button variant="ghost" size="icon" onClick={() => handleActionItemEdit(item)}>
                             <PencilIcon className="h-4 w-4" />
                           </Button>
@@ -462,7 +473,7 @@ export default function RetroBoard() {
                             <TrashIcon className="h-4 w-4" />
                           </Button>
                         </div>
-                      </CardFooter>
+                      </div>
                     </Card>
                   ))}
                 </div>
