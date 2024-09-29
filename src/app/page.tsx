@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -52,6 +52,13 @@ interface ActionItem {
   content: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  avatar: string;
+  email: string;
+}
+
 const columns = [
   { id: "good", title: "Good", color: "bg-green-100" },
   { id: "keep", title: "Keep", color: "bg-blue-100" },
@@ -59,16 +66,16 @@ const columns = [
   { id: "bad", title: "Bad", color: "bg-red-100" },
 ]
 
-const users = [
-  { id: "0", name: "Admin", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: "1", name: "Alice", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: "2", name: "Bob", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: "3", name: "Charlie", avatar: "/placeholder.svg?height=32&width=32" },
+const users: User[] = [
+  { id: "0", name: "Admin", avatar: "/placeholder.svg?height=32&width=32", email: "admin@example.com" },
+  { id: "1", name: "Alice", avatar: "/placeholder.svg?height=32&width=32", email: "alice@example.com" },
+  { id: "2", name: "Bob", avatar: "/placeholder.svg?height=32&width=32", email: "bob@example.com" },
+  { id: "3", name: "Charlie", avatar: "/placeholder.svg?height=32&width=32", email: "charlie@example.com" },
 ]
 
 export default function RetroBoard() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"))
-  const [user, setUser] = useState({ id: "", name: "", avatar: "" })
+  const [user, setUser] = useState<User>({ id: "", name: "", avatar: "", email: "" })
   const [cards, setCards] = useState<Card[]>([])
   const [newCard, setNewCard] = useState<Omit<Card, 'id' | 'author' | 'likes'>>({ type: "good", content: "", isAnonymous: false })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -97,18 +104,26 @@ export default function RetroBoard() {
     }
   }, [])
 
+  const isActionItemValid = newActionItem.assignee && newActionItem.content.trim() !== ""
+
+  const isSubmitEnabled = newCard.content.trim() !== ""
+  const isActionItemSubmitEnabled = isActionItemValid
+
   const handleLogin = (username: string) => {
-    const newUser = { id: "0", name: username, avatar: "/placeholder.svg?height=32&width=32" }
+    const newUser = users[0]
     setIsLoggedIn(true)
     setUser(newUser)
     localStorage.setItem("user", JSON.stringify(newUser))
   }
 
-  const handleCardSubmit = () => {
-    const updatedCards: Card[] = [...cards, { ...newCard, id: Date.now().toString(), author: newCard.isAnonymous ? "Anonymous" : user.name, likes: [] }]
-    setCards(updatedCards)
-    localStorage.setItem("retroCards", JSON.stringify(updatedCards))
-    setNewCard({ type: "good", content: "", isAnonymous: false })
+  const handleCardSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (isSubmitEnabled) {
+      const updatedCards: Card[] = [...cards, { ...newCard, id: Date.now().toString(), author: newCard.isAnonymous ? "Anonymous" : user.name, likes: [] }]
+      setCards(updatedCards)
+      localStorage.setItem("retroCards", JSON.stringify(updatedCards))
+      setNewCard({ type: "good", content: "", isAnonymous: false })
+    }
   }
 
   const handleCardDelete = (cardId: string) => {
@@ -131,19 +146,22 @@ export default function RetroBoard() {
     localStorage.setItem("retroCards", JSON.stringify(updatedCards))
   }
 
-  const handleActionItemSubmit = () => {
-    let updatedActionItems: ActionItem[]
-    if (editingActionItem) {
-      updatedActionItems = actionItems.map(item =>
-        item.id === editingActionItem.id ? { ...newActionItem, id: item.id } : item
-      )
-    } else {
-      updatedActionItems = [...actionItems, { ...newActionItem, id: Date.now().toString() }]
+  const handleActionItemSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (isActionItemSubmitEnabled) {
+      let updatedActionItems: ActionItem[]
+      if (editingActionItem) {
+        updatedActionItems = actionItems.map(item =>
+          item.id === editingActionItem.id ? { ...newActionItem, id: item.id } : item
+        )
+      } else {
+        updatedActionItems = [...actionItems, { ...newActionItem, id: Date.now().toString() }]
+      }
+      setActionItems(updatedActionItems)
+      localStorage.setItem("actionItems", JSON.stringify(updatedActionItems))
+      setNewActionItem({ assignee: "", dueDate: "", content: "" })
+      setEditingActionItem(null)
     }
-    setActionItems(updatedActionItems)
-    localStorage.setItem("actionItems", JSON.stringify(updatedActionItems))
-    setNewActionItem({ assignee: "", dueDate: "", content: "" })
-    setEditingActionItem(null)
   }
 
   const handleActionItemDelete = (itemId: string) => {
@@ -157,12 +175,31 @@ export default function RetroBoard() {
     setEditingActionItem(item)
   }
 
-  const isActionItemValid = newActionItem.assignee && newActionItem.content.trim() !== ""
-
   const handleLogout = () => {
     setIsLoggedIn(false)
-    setUser({ id: "", name: "", avatar: "" })
+    setUser({ id: "", name: "", avatar: "", email: "" })
     localStorage.removeItem("user")
+  }
+
+  const handleCardKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && isSubmitEnabled) {
+      handleCardSubmit()
+    }
+  }
+
+  const handleActionItemKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter") {
+      if (e.shiftKey) {
+        // Shift + Enter 用于换行，不需要特殊处理
+        return;
+      } else {
+        // 仅 Enter 键用于提交
+        e.preventDefault(); // 阻止默认的换行行为
+        if (isActionItemSubmitEnabled) {
+          handleActionItemSubmit();
+        }
+      }
+    }
   }
 
   return (
@@ -188,7 +225,7 @@ export default function RetroBoard() {
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{user.name}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        m@example.com
+                        {user.email ?? 'No email'}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -221,6 +258,7 @@ export default function RetroBoard() {
               placeholder="Enter your opinion"
               value={newCard.content}
               onChange={(e) => setNewCard({ ...newCard, content: e.target.value })}
+              onKeyPress={handleCardKeyPress}
               className="flex-grow min-w-[200px]"
             />
             <div className="flex items-center">
@@ -231,7 +269,7 @@ export default function RetroBoard() {
               />
               <label htmlFor="anonymous" className="ml-2 hidden sm:inline">Anonymous</label>
             </div>
-            <Button onClick={handleCardSubmit}>Submit</Button>
+            <Button onClick={handleCardSubmit} disabled={!isSubmitEnabled}>Submit</Button>
           </div>
           <div className="flex flex-1 overflow-hidden">
             <div className="flex-1 mr-4 overflow-auto">
@@ -379,12 +417,17 @@ export default function RetroBoard() {
                   <Label htmlFor="actionContent" className="mt-2">Action Item</Label>
                   <Textarea
                     id="actionContent"
-                    placeholder="Action item content"
+                    placeholder="Action item content (Enter to submit, Shift + Enter for new line)"
                     value={newActionItem.content}
                     onChange={(e) => setNewActionItem({ ...newActionItem, content: e.target.value })}
+                    onKeyDown={handleActionItemKeyPress}
                     className="mt-2"
                   />
-                  <Button className="w-full mt-2" onClick={handleActionItemSubmit} disabled={!isActionItemValid}>
+                  <Button 
+                    className="w-full mt-2" 
+                    onClick={handleActionItemSubmit} 
+                    disabled={!isActionItemSubmitEnabled}
+                  >
                     {editingActionItem ? "Update" : "Add"} Action Item
                   </Button>
                 </div>
@@ -396,9 +439,9 @@ export default function RetroBoard() {
                       </CardContent>
                       <CardFooter className="flex justify-between items-center text-xs text-muted-foreground">
                         <div className="flex-1 flex items-center space-x-2 overflow-hidden">
-                          <span className="truncate">{users.find(user => user.id === item.assignee)?.name || '未指派'}</span>
+                          <span className="truncate">{users.find(user => user.id === item.assignee)?.name || 'Unassigned'}</span>
                           <span className="flex-shrink-0">|</span>
-                          <span className="truncate">{item.dueDate ? format(new Date(item.dueDate), "yyyy/MM/dd") : '无截止日期'}</span>
+                          <span className="truncate">{item.dueDate ? format(new Date(item.dueDate), "yyyy/MM/dd") : 'No due date'}</span>
                         </div>
                         <div className="flex-shrink-0 ml-2">
                           <Button variant="ghost" size="icon" onClick={() => handleActionItemEdit(item)}>

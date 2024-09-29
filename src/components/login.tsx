@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, KeyboardEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -19,6 +19,13 @@ export default function Login({ onLogin }: LoginProps) {
     }
   }
 
+  // 添加键盘事件处理函数
+  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      handleLogin()
+    }
+  }
+
   return (
     <div className="flex items-center justify-center flex-grow">
       <Card className="w-[350px]">
@@ -31,6 +38,7 @@ export default function Login({ onLogin }: LoginProps) {
             className="mb-4" 
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            onKeyPress={handleKeyPress}
           />
           <Input 
             type="password" 
@@ -38,6 +46,7 @@ export default function Login({ onLogin }: LoginProps) {
             className="mb-4"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyPress={handleKeyPress}
           />
         </CardContent>
         <CardFooter>
