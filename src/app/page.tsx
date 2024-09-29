@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 
 import Login from "@/components/login"
 
@@ -285,19 +286,13 @@ export default function RetroBoard() {
                     {cards.filter(card => card.type === column.id).map((card) => (
                       <Card key={card.id} className="mb-2 relative">
                         <CardContent className="p-4">
+                          <div className="text-xs text-gray-400 text-center mb-2">
+                            — {card.author} —
+                          </div>
                           <p>{card.content}</p>
                         </CardContent>
-                        <CardFooter className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">{card.author}</span>
+                        <CardFooter className="flex justify-between items-center h-[60px]">
                           <div className="flex items-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleCardDelete(card.id)}
-                              className="mr-2"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -346,6 +341,13 @@ export default function RetroBoard() {
                               </Tooltip>
                             </TooltipProvider>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleCardDelete(card.id)}
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
                         </CardFooter>
                       </Card>
                     ))}
