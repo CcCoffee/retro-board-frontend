@@ -34,6 +34,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import Login from "@/components/login"
+
 interface Card {
   id: string;
   type: string;
@@ -65,7 +67,7 @@ const users = [
 ]
 
 export default function RetroBoard() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"))
   const [user, setUser] = useState({ id: "", name: "", avatar: "" })
   const [cards, setCards] = useState<Card[]>([])
   const [newCard, setNewCard] = useState<Omit<Card, 'id' | 'author' | 'likes'>>({ type: "good", content: "", isAnonymous: false })
@@ -76,20 +78,30 @@ export default function RetroBoard() {
   const [openAssignee, setOpenAssignee] = useState(false)
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("user")
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser)
+      setUser(parsedUser)
+    }
+
+    // load data from database
     const storedCards = localStorage.getItem("retroCards")
     if (storedCards) {
       setCards(JSON.parse(storedCards))
     }
 
+    // load data from database
     const storedActionItems = localStorage.getItem("actionItems")
     if (storedActionItems) {
       setActionItems(JSON.parse(storedActionItems))
     }
   }, [])
 
-  const handleLogin = () => {
+  const handleLogin = (username: string) => {
+    const newUser = { id: "0", name: username, avatar: "/placeholder.svg?height=32&width=32" }
     setIsLoggedIn(true)
-    setUser({ id: "0", name: "Admin", avatar: "/placeholder.svg?height=32&width=32" }) // 更新 admin 的 id
+    setUser(newUser)
+    localStorage.setItem("user", JSON.stringify(newUser))
   }
 
   const handleCardSubmit = () => {
@@ -150,30 +162,13 @@ export default function RetroBoard() {
   const handleLogout = () => {
     setIsLoggedIn(false)
     setUser({ id: "", name: "", avatar: "" })
-    localStorage.clear() // 清除所有本地存储
-    // 或者只清除特定的项目:
-    // localStorage.removeItem("retroCards")
-    // localStorage.removeItem("actionItems")
-    // localStorage.removeItem("user")
+    localStorage.removeItem("user")
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {!isLoggedIn ? (
-        <div className="flex items-center justify-center flex-grow">
-          <Card className="w-[350px]">
-            <CardHeader>
-              <h2 className="text-2xl font-bold text-center font-heading">Login</h2>
-            </CardHeader>
-            <CardContent>
-              <Input placeholder="Username" className="mb-4" />
-              <Input type="password" placeholder="Password" className="mb-4" />
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full" onClick={handleLogin}>Login</Button>
-            </CardFooter>
-          </Card>
-        </div>
+        <Login onLogin={handleLogin} />
       ) : (
         <div className="flex flex-col h-screen">
           <div className="flex justify-between items-center p-4">
