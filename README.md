@@ -34,3 +34,27 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Adding UI Components
+
+To add the Badge component to your project, follow these steps:
+
+1. Open a terminal and navigate to the project root directory
+
+2. Run the following command:
+
+```bash
+npx shadcn add badge
+```
+
+3. Follow the prompts to complete the component addition
+
+4. Import and use the Badge component in your project:
+
+```tsx
+import { Badge } from "@/components/ui/badge"
+
+export function Example() {
+  return <Badge>Badge</Badge>
+}
+```

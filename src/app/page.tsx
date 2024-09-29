@@ -33,6 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Badge } from "@/components/ui/badge"
 
 import Login from "@/components/login"
 
@@ -108,6 +109,10 @@ export default function RetroBoard() {
 
   const isSubmitEnabled = newCard.content.trim() !== ""
   const isActionItemSubmitEnabled = isActionItemValid
+
+  // 计算 action items 的摘要信息
+  const totalActionItems = actionItems.length
+  const overdueTasks = actionItems.filter(item => new Date(item.dueDate) < new Date()).length
 
   const handleLogin = (username: string) => {
     const newUser = users[0]
@@ -430,6 +435,10 @@ export default function RetroBoard() {
                   >
                     {editingActionItem ? "Update" : "Add"} Action Item
                   </Button>
+                  <div className="flex justify-between items-center mt-2 text-sm">
+                    <span>Total: <Badge variant="secondary">{totalActionItems}</Badge></span>
+                    <span>Overdue: <Badge variant="destructive">{overdueTasks}</Badge></span>
+                  </div>
                 </div>
                 <div>
                   {actionItems.map((item) => (
