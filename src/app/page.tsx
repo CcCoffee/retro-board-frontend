@@ -34,6 +34,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Loader2 } from "lucide-react"
 
 import Login from "@/components/login"
 import { authService } from "@/services/authService"
@@ -202,7 +204,21 @@ export default function RetroBoard() {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <div className="w-[300px] space-y-5">
+          <Skeleton className="h-12 w-12 rounded-full mx-auto" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
+          <Skeleton className="h-8 w-[300px]" />
+          <div className="flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
