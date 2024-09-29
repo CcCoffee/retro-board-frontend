@@ -36,7 +36,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 
 import Login from "@/components/login"
-import { Separator } from "@radix-ui/react-select"
 
 interface Card {
   id: string;
@@ -61,11 +60,11 @@ interface User {
   email: string;
 }
 
-const columns = [
-  { id: "good", title: "Good", color: "bg-green-100" },
-  { id: "keep", title: "Keep", color: "bg-blue-100" },
-  { id: "change", title: "Change", color: "bg-yellow-100" },
-  { id: "bad", title: "Bad", color: "bg-red-100" },
+const typesInfo = [
+  { id: "good", title: "Good", color: "bg-green-100", indicatorColor: "bg-green-300" },
+  { id: "keep", title: "Keep", color: "bg-blue-100", indicatorColor: "bg-blue-300" },
+  { id: "change", title: "Change", color: "bg-yellow-100", indicatorColor: "bg-yellow-300" },
+  { id: "bad", title: "Bad", color: "bg-red-100", indicatorColor: "bg-red-300" },
 ]
 
 const users: User[] = [
@@ -252,10 +251,10 @@ export default function RetroBoard() {
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                {columns.map((column) => (
-                  <SelectItem key={column.id} value={column.id} className="flex items-center">
-                    <div className={`w-3 h-3 mr-2 ${column.color} inline-block`}></div>
-                    <span className="inline">{column.title}</span>
+                {typesInfo.map((typeInfo) => (
+                  <SelectItem key={typeInfo.id} value={typeInfo.id} className="flex items-center">
+                    <div className={`w-3 h-3 mr-2 ${typeInfo.indicatorColor} inline-block rounded-full`}></div>
+                    <span className="inline">{typeInfo.title}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -280,7 +279,7 @@ export default function RetroBoard() {
           <div className="flex flex-1 overflow-hidden">
             <div className="flex-1 mr-4 overflow-auto">
               <div className="grid grid-cols-4 gap-4 h-full">
-                {columns.map((column, index) => (
+                {typesInfo.map((column, index) => (
                   <div key={column.id} className={`${column.color} p-4 rounded-lg overflow-auto ${index === 0 ? 'ml-4' : ''}`}>
                     <h3 className="text-lg font-bold mb-2 font-heading">{column.title}</h3>
                     {cards.filter(card => card.type === column.id).map((card) => (
