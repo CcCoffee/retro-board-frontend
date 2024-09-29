@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Label } from "@/components/ui/label"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, HeartIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { endOfDay, format, isBefore, startOfDay } from "date-fns"
+import { format, isBefore, startOfDay } from "date-fns"
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -291,7 +291,7 @@ export default function RetroBoard() {
                           </div>
                           <p>{card.content}</p>
                         </CardContent>
-                        <CardFooter className="flex justify-between items-center h-[60px]">
+                        <div className="h-[40px] flex justify-between items-center px-4">
                           <div className="flex items-center">
                             <Button
                               variant="ghost"
@@ -348,7 +348,7 @@ export default function RetroBoard() {
                           >
                             <TrashIcon className="h-4 w-4" />
                           </Button>
-                        </CardFooter>
+                        </div>
                       </Card>
                     ))}
                   </div>
