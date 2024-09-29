@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Label } from "@/components/ui/label"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, HeartIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { format, isBefore, startOfDay } from "date-fns"
+import { endOfDay, format, isBefore, startOfDay } from "date-fns"
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -112,7 +112,7 @@ export default function RetroBoard() {
 
   // 计算 action items 的摘要信息
   const totalActionItems = actionItems.length
-  const overdueTasks = actionItems.filter(item => new Date(item.dueDate) < new Date()).length
+  const overdueTasks = actionItems.filter(item => new Date(item.dueDate) < startOfDay(new Date())).length
 
   const handleLogin = (username: string) => {
     const newUser = users[0]
@@ -442,7 +442,7 @@ export default function RetroBoard() {
                 </div>
                 <div>
                   {actionItems.map((item) => (
-                    <Card key={item.id} className={`mb-2 ${new Date(item.dueDate) < new Date() ? "bg-destructive/10" : ""}`}>
+                    <Card key={item.id} className={`mb-2 ${new Date(item.dueDate) < startOfDay(new Date()) ? "bg-destructive/10" : ""}`}>
                       <CardContent className="p-4">
                         <p className="whitespace-pre-wrap break-words">{item.content}</p>
                       </CardContent>
