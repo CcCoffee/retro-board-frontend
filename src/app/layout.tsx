@@ -16,6 +16,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Retro Board",
   description: "A retrospective board application",
+  icons: {
+    icon: './favicon.ico',
+  },
 };
 
 export default function RootLayout({
