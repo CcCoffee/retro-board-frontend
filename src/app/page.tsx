@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -37,7 +38,6 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Loader2 } from "lucide-react"
 
-import Login from "@/components/login"
 import { authService } from "@/services/authService"
 import { retroService } from "@/services/retroService"
 import { User, RetroCard, ActionItem } from "@/types/retro"
@@ -67,6 +67,7 @@ export default function RetroBoard() {
   const [newActionItem, setNewActionItem] = useState<Omit<ActionItem, 'id'>>({ assignee: "", dueDate: "", content: "" })
   const [editingActionItem, setEditingActionItem] = useState<ActionItem | null>(null)
   const [openAssignee, setOpenAssignee] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -78,12 +79,14 @@ export default function RetroBoard() {
           setUser(currentUser)
           loadData()
         }
+      } else {
+        router.push("/login") // 如果未登录,重定向到登录页面
       }
       setIsLoading(false)
     }
 
     checkLoginStatus()
-  }, [])
+  }, [router])
 
   const loadData = async () => {
     const loadedCards = await retroService.getCards()
@@ -180,6 +183,7 @@ export default function RetroBoard() {
     await authService.logout()
     setIsLoggedIn(false)
     setUser(null)
+    router.push("/login") // 登出后重定向到登录页面
   }
 
   const handleCardKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -223,9 +227,7 @@ export default function RetroBoard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {!isLoggedIn ? (
-        <Login onLogin={handleLogin} />
-      ) : (
+      {isLoggedIn && (
         <div className="flex flex-col h-screen">
           <div className="flex justify-between items-center p-4">
             <h1 className="text-2xl font-bold font-heading">Retro Board</h1>
@@ -234,17 +236,17 @@ export default function RetroBoard() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name[0]}</AvatarFallback>
+                      <AvatarImage src={user?.avatar} alt={user?.name} />
+                      <AvatarFallback>{user?.name?.[0] ?? '?'}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {user.email ?? 'No email'}
+                        {user?.email ?? 'No email'}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -310,7 +312,7 @@ export default function RetroBoard() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleCardLike(card.id)}
-                              className={card.likes.includes(user.id) ? "text-red-500" : ""}
+                              className={card.likes.includes(user?.id ?? "") ? "text-red-500" : ""}
                             >
                               <HeartIcon className="h-4 w-4" />
                             </Button>

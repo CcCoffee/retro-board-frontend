@@ -1,27 +1,25 @@
 "use client"
 
 import { useState, KeyboardEvent } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { authService } from "@/services/authService"
 
-interface LoginProps {
-  onLogin: (username: string) => void
-}
-
-export default function Login({ onLogin }: LoginProps) {
+export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const router = useRouter()
 
   const handleLogin = async () => {
     if (username && password) {
       try {
         const user = await authService.login(username, password)
         authService.setCurrentUser(user)
-        onLogin(username)
+        router.push("/") // 登录成功后重定向到主页
       } catch (error) {
-        console.error("Login failed:", error)
+        console.error("登录失败:", error)
         // 这里可以添加错误处理,比如显示错误消息
       }
     }
@@ -54,7 +52,7 @@ export default function Login({ onLogin }: LoginProps) {
           </CardHeader>
           <CardContent>
             <Input 
-              placeholder="Username" 
+              placeholder="用户名" 
               className="mb-4" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -62,7 +60,7 @@ export default function Login({ onLogin }: LoginProps) {
             />
             <Input 
               type="password" 
-              placeholder="Password" 
+              placeholder="密码" 
               className="mb-4"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -75,7 +73,7 @@ export default function Login({ onLogin }: LoginProps) {
               onClick={handleLogin} 
               disabled={!username || !password}
             >
-              Login
+              登录
             </Button>
           </CardFooter>
         </Card>

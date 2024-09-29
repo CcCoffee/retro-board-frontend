@@ -20,10 +20,3 @@ export interface ActionItem {
   dueDate: string;
   content: string;
 }
-
-export const typesInfo = [
-  { id: "good", title: "Good", color: "bg-green-100", indicatorColor: "bg-green-300" },
-  { id: "keep", title: "Keep", color: "bg-blue-100", indicatorColor: "bg-blue-300" },
-  { id: "change", title: "Change", color: "bg-yellow-100", indicatorColor: "bg-yellow-300" },
-  { id: "bad", title: "Bad", color: "bg-red-100", indicatorColor: "bg-red-300" },
-]
