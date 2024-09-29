@@ -76,7 +76,7 @@ const users: User[] = [
 ]
 
 export default function RetroBoard() {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"))
+  const [isLoggedIn, setIsLoggedIn] = useState(typeof localStorage !== 'undefined' && !!localStorage.getItem("user"))
   const [user, setUser] = useState<User>({ id: "", name: "", avatar: "", email: "" })
   const [cards, setCards] = useState<Card[]>([])
   const [newCard, setNewCard] = useState<Omit<Card, 'id' | 'author' | 'likes'>>({ type: "good", content: "", isAnonymous: false })
